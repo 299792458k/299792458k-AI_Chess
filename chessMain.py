@@ -3,9 +3,9 @@ from pygame import draw
 from pygame import image
 from pygame.constants import MOUSEBUTTONDOWN
 
-import chess_boad
+import chessEngine
 
-WIDTH = 800
+WIDTH = 640
 HEIGHT = 640
 BLOCK = 8
 SQ_SIZE = HEIGHT // BLOCK 
@@ -37,32 +37,34 @@ def main():
     screen.fill((96,91,84))
 
 
-    gS = chess_boad.gameState()
+    gS = chessEngine.gameState()
     
     loadImages()
 
-    # sqSelected = () #null if no square is selected; keep track of the last click of th user
-    # playerClicked = [] # keep track of player click
-
     running = True
-    
+    sqSelected = ()  #no square is selected, keep track of the last click of the user( tuple (row,col))
+    playerClicks = [] #keep track of player clicks (two tuples[(6,4),(4,4)])
     while running:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
-            # elif e.type == MOUSEBUTTONDOWN:
-            #     location = pygame.mouse.get_pos() #get (x,y) of mouse
-            #     col = location[0]//SQ_SIZE
-            #     row = location[1]//SQ_SIZE - 1 #screen size = 800x640
-                # if (sqSelected == (row,col)):
-                #     sqSelected = () #double click then deselected
-                #     playerClicked = [] # then clear player click
-                # else:
-                #     sqSelected = (row,col)
-                #     playerClicked.append(sqSelected)
-                # if len(playerClicked) == 2: #if playerClick has 2 element ~ 2 click in different square
-                #     aaa = 1
-
+            elif e.type == pygame.MOUSEBUTTONDOWN:
+                location = pygame.mouse.get_pos() #(x,y) location of the mouse
+                col = location[0]//SQ_SIZE        # only with full size board
+                row = location[1]//SQ_SIZE
+                if sqSelected==(row,col):         #the user clicked the same square twice
+                    sqSelected=()                 #deselect
+                    playerClicks=[]             #clear the player clicks
+                else:
+                    sqSelected=(row,col)
+                    playerClicks.append(sqSelected)
+                if len(playerClicks)==2:        #the 2nd click
+                    move = chessEngine.Move(playerClicks[0],playerClicks[1],gS.board)
+                    print(move.getChessNotation())
+                    gS.makeMove(move)
+                    sqSelected = ()     #reset player clicks
+                    playerClicks = []   
+                    
         drawGameState(screen,gS)
         clock.tick(MAX_FPS)
         
@@ -81,7 +83,7 @@ def drawBoard(screen):
     for r in range(BLOCK):
         for c in range(BLOCK):
             color = colors[(r+c)%2]
-            pygame.draw.rect(screen, color, [(r+1)*80, c*80, SQ_SIZE, SQ_SIZE])
+            pygame.draw.rect(screen, color, [(r)*80, c*80, SQ_SIZE, SQ_SIZE])
 
 
 def drawPieces(screen, board):
@@ -90,7 +92,7 @@ def drawPieces(screen, board):
             piece = board[r][c]
             if piece != "--": 
                 #show this image
-                screen.blit(IMAGES[piece], pygame.Rect((c+1)*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+                screen.blit(IMAGES[piece], pygame.Rect((c)*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
 
