@@ -38,6 +38,8 @@ def main():
 
 
     gS = chessEngine.gameState()
+    validMoves = gS.getValidMoves()
+    moveMade = False    #flag var for when a move is made (to regenerate the validMoves)
     
     loadImages()
 
@@ -48,6 +50,7 @@ def main():
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
+            # mouse handler
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 location = pygame.mouse.get_pos() #(x,y) location of the mouse
                 col = location[0]//SQ_SIZE        # only with full size board
@@ -61,10 +64,21 @@ def main():
                 if len(playerClicks)==2:        #the 2nd click
                     move = chessEngine.Move(playerClicks[0],playerClicks[1],gS.board)
                     print(move.getChessNotation())
-                    gS.makeMove(move)
+                    if move in validMoves:
+                        gS.makeMove(move)
+                        moveMade = True
                     sqSelected = ()     #reset player clicks
                     playerClicks = []   
-                    
+            # key handler
+            elif e.type==pygame.KEYDOWN:
+                if e.key == pygame.K_z: # undo when press 'z'    
+                    gS.undoMove()
+                    moveMade = True     # the same as 'validMoves = gS.getValidMoves()'     
+
+        if moveMade:
+            validMoves = gS.getValidMoves() #if the move is made, generate a new set of validMoves
+            moveMade = False
+            
         drawGameState(screen,gS)
         clock.tick(MAX_FPS)
         
