@@ -2,8 +2,6 @@ git init
 
 git remote add origin https://github.com/299792458k/299792458k-AI_Chess.git
 
-git pull
-
 git pull https://github.com/299792458k/299792458k-AI_Chess.git main
 
 git add .            // sau khi tạo file note.txt thì cần add vào git
