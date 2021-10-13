@@ -109,6 +109,7 @@ def drawPieces(screen, board):
                 screen.blit(IMAGES[piece], pygame.Rect((c)*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
-# toi comment xem push duoc chua
+
+# comment phat nua xem the nao
 
 main()
