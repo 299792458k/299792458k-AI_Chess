@@ -1,12 +1,16 @@
-git init
+git clone <link repos trên git> //tải một bản sao của project theo đường link
 
-git remote add origin https://github.com/299792458k/299792458k-AI_Chess.git
+HOẶC
 
-git pull https://github.com/299792458k/299792458k-AI_Chess.git main
+git init //khởi tạo repos trên local ại forder muốn lưu các file source
 
-git add .            // sau khi tạo file note.txt thì cần add vào git
+git remote add origin https://github.com/299792458k/299792458k-AI_Chess.git   //liên kết link
 
-git commit -m "son"
+git pull https://github.com/299792458k/299792458k-AI_Chess.git main    //tải source về
+
+git add .            // sau khi tạo file note.txt thì cần add vào repos mà itnit từ trước
+
+git commit -m "son"   //xác nhận thay đổi
 
 //up lên github repos
 git branch -M main      
