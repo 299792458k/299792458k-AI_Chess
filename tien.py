@@ -91,8 +91,9 @@ class GameState():
                             break
                 # get rid of any moves that don't block check or move king
                 for i in range(len(moves) - 1, -1, -1):  # iterate through the list backwards when removing elements
-                    if moves[i].pieceMoved[1] != "K":  # move doesn't move king so it must block or capture
-                        if not (moves[i].endRow,moves[i].endCol) in valid_squares:  # move doesn't block or capture piece
+                    if moves[i].piece_moved[1] != "K":  # move doesn't move king so it must block or capture
+                        if not (moves[i].end_row,
+                                moves[i].end_col) in valid_squares:  # move doesn't block or capture piece
                             moves.remove(moves[i])
             else:  # double check, king has to move
                 self.getKingMoves(king_row, king_col, moves)
