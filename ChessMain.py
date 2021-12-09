@@ -153,7 +153,7 @@ def main():
             else:
                 drawEndGameText(screen, "White wins by checkmate")
                 
-        if game_state.count_move >= 30:
+        if game_state.count_move >= game_state.count_limit:
             game_over = True
             drawEndGameText(screen,"DRAW")
 

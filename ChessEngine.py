@@ -41,6 +41,7 @@ class GameState:
         
         ## tinh co hoa
         self.count_move = 0
+        self.count_limit = 30
         self.pawn_move =  False
         self.hit_move = False
 
