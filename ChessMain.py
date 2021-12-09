@@ -49,7 +49,7 @@ def main():
     move_undone = False
     move_finder_process = None
     move_log_font = p.font.SysFont("Arial", 14, False, False)
-    player_one = True  # if a human is playing white, then this will be True, else False
+    player_one = False  # if a human is playing white, then this will be True, else False
     player_two = False  # if a human is playing black, then this will be True, else False
 
     while running:
@@ -155,7 +155,7 @@ def main():
                 
         if game_state.count_move >= 30:
             game_over = True
-            drawEndGameText(screen,"Stalemate")
+            drawEndGameText(screen,"DRAW")
 
         clock.tick(MAX_FPS)
         p.display.flip()
