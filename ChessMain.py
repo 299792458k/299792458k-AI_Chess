@@ -51,111 +51,152 @@ def main():
     move_log_font = p.font.SysFont("Arial", 14, False, False)
     player_one = False  # if a human is playing white, then this will be True, else False
     player_two = False  # if a human is playing black, then this will be True, else False
+    
+    p.draw.rect(screen, "brown", p.Rect(109, 256, 100, 50))
+    p.draw.rect(screen, "brown", p.Rect(327, 256, 100, 50))
+    p.draw.rect(screen, "brown", p.Rect(545, 256, 100, 50))
+    
+    difficult = 0
+    font = p.font.SysFont('consolas', 24)
 
+    start = font.render('Choose a level of difficult:', True, "gray")
+    screen.blit(start, (130, 200))
+
+    easy = font.render('EASY', True, "gray")
+    screen.blit(easy, (130, 270))
+
+    medium = font.render('MEDIUM', True, "gray")
+    screen.blit(medium, (335, 270))
+
+    hard = font.render('HARD', True, "gray")
+    screen.blit(hard, (565, 270))
+    
+    play = 0
     while running:
-        human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two) 
-        for e in p.event.get():
-            if e.type == p.QUIT:
-                p.quit()
-                sys.exit()
-            # mouse handler
-            elif e.type == p.MOUSEBUTTONDOWN:
-                if not game_over:
+        if play == 0:
+            for e in p.event.get():
+                if e.type == p.QUIT:
+                    p.quit()
+                    sys.exit()
+
+                if e.type == p.MOUSEBUTTONDOWN:
                     location = p.mouse.get_pos()  # (x, y) location of the mouse
-                    col = location[0] // SQUARE_SIZE
-                    row = location[1] // SQUARE_SIZE
-                    if square_selected == (row, col) or col >= 8:  # user clicked the same square twice
-                        square_selected = ()  # deselect
-                        player_clicks = []  # clear clicks
-                    else:
-                        square_selected = (row, col)
-                        player_clicks.append(square_selected)  # append for both 1st and 2nd click
-                    if len(player_clicks) == 2 and human_turn:  # after 2nd click --> check and make move
-                        move = ChessEngine.Move(player_clicks[0], player_clicks[1], game_state.board)
-                        for i in range(len(valid_moves)):
-                            if move == valid_moves[i]:
-                                game_state.makeMove(valid_moves[i])
-                                move_made = True
-                                animate = True
-                                square_selected = ()  # reset user clicks
-                                player_clicks = []
-                        if not move_made:
-                            player_clicks = [square_selected]
+                    if 256 < location[1] < 286:
+                        if 109 < location[0] < 218:
+                            difficult = 1
+                        elif 327 < location[0] < 436: 
+                            difficult = 2
+                        elif 545 < location[0] < 654:
+                            difficult = 3
+                if difficult != 0:
+                    play = 1
+                    # print(difficult)
+                    break
+                    
+        if play == 1:
+            human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two) 
+            for e in p.event.get():
+                if e.type == p.QUIT:
+                    p.quit()
+                    sys.exit()
+                # mouse handler
+                elif e.type == p.MOUSEBUTTONDOWN:
+                    if not game_over:
+                        location = p.mouse.get_pos()  # (x, y) location of the mouse
+                        col = location[0] // SQUARE_SIZE
+                        row = location[1] // SQUARE_SIZE
+                        if square_selected == (row, col) or col >= 8:  # user clicked the same square twice
+                            square_selected = ()  # deselect
+                            player_clicks = []  # clear clicks
+                        else:
+                            square_selected = (row, col)
+                            player_clicks.append(square_selected)  # append for both 1st and 2nd click
+                        if len(player_clicks) == 2 and human_turn:  # after 2nd click --> check and make move
+                            move = ChessEngine.Move(player_clicks[0], player_clicks[1], game_state.board)
+                            for i in range(len(valid_moves)):
+                                if move == valid_moves[i]:
+                                    game_state.makeMove(valid_moves[i])
+                                    move_made = True
+                                    animate = True
+                                    square_selected = ()  # reset user clicks
+                                    player_clicks = []
+                            if not move_made:
+                                player_clicks = [square_selected]
 
-            # key handler
-            elif e.type == p.KEYDOWN:
-                if e.key == p.K_z:  # undo when 'z' is pressed
-                    game_state.undoMove()
+                # key handler
+                elif e.type == p.KEYDOWN:
+                    if e.key == p.K_z:  # undo when 'z' is pressed
+                        game_state.undoMove()
+                        move_made = True
+                        animate = False
+                        game_over = False
+                        if ai_thinking:
+                            move_finder_process.terminate()
+                            ai_thinking = False
+                        move_undone = True
+                    if e.key == p.K_r:  # reset the game when 'r' is pressed
+                        game_state = ChessEngine.GameState()
+                        valid_moves = game_state.getValidMoves()
+                        square_selected = ()
+                        player_clicks = []
+                        move_made = False
+                        animate = False
+                        game_over = False
+                        if ai_thinking:
+                            move_finder_process.terminate()
+                            ai_thinking = False
+                        move_undone = True
+
+            # AI move finder
+            if not game_over and not human_turn and not move_undone: # machine turn
+                if not ai_thinking:
+                    ai_thinking = True
+                    return_queue = Queue()  # used to pass data between threads, to print the move
+                    # find good move
+                    move_finder_process = Process(target=ChessAI.findBestMove, args=(game_state, valid_moves, return_queue, difficult)) 
+                    move_finder_process.start()
+
+                if not move_finder_process.is_alive():
+                    ai_move = return_queue.get()
+                    if ai_move is None:
+                        ai_move = ChessAI.findRandomMove(valid_moves)
+                    game_state.makeMove(ai_move)
                     move_made = True
-                    animate = False
-                    game_over = False
-                    if ai_thinking:
-                        move_finder_process.terminate()
-                        ai_thinking = False
-                    move_undone = True
-                if e.key == p.K_r:  # reset the game when 'r' is pressed
-                    game_state = ChessEngine.GameState()
-                    valid_moves = game_state.getValidMoves()
-                    square_selected = ()
-                    player_clicks = []
-                    move_made = False
-                    animate = False
-                    game_over = False
-                    if ai_thinking:
-                        move_finder_process.terminate()
-                        ai_thinking = False
-                    move_undone = True
+                    animate = True
+                    ai_thinking = False
 
-        # AI move finder
-        if not game_over and not human_turn and not move_undone: # machine turn
-            if not ai_thinking:
-                ai_thinking = True
-                return_queue = Queue()  # used to pass data between threads, to print the move
-                # find good move
-                move_finder_process = Process(target=ChessAI.findBestMove, args=(game_state, valid_moves, return_queue)) 
-                move_finder_process.start()
+            # after each AI move: reset all status
+            if move_made:
+                if animate:
+                    animateMove(game_state.move_log[-1], screen, game_state.board, clock)
+                valid_moves = game_state.getValidMoves()
+                move_made = False
+                animate = False
+                move_undone = False
 
-            if not move_finder_process.is_alive():
-                ai_move = return_queue.get()
-                if ai_move is None:
-                    ai_move = ChessAI.findRandomMove(valid_moves)
-                game_state.makeMove(ai_move)
-                move_made = True
-                animate = True
-                ai_thinking = False
+            drawGameState(screen, game_state, valid_moves, square_selected)
 
-        # after each AI move: reset all status
-        if move_made:
-            if animate:
-                animateMove(game_state.move_log[-1], screen, game_state.board, clock)
-            valid_moves = game_state.getValidMoves()
-            move_made = False
-            animate = False
-            move_undone = False
+            if not game_over:
+                drawMoveLog(screen, game_state, move_log_font)
 
-        drawGameState(screen, game_state, valid_moves, square_selected)
+            if game_state.checkmate:
+                game_over = True
+                if game_state.white_to_move:
+                    drawEndGameText(screen, "Black wins by checkmate")
+                else:
+                    drawEndGameText(screen, "White wins by checkmate")
 
-        if not game_over:
-            drawMoveLog(screen, game_state, move_log_font)
+            elif game_state.stalemate:
+                game_over = True
+                # drawEndGameText(screen, "Stalemate")
+                if game_state.white_to_move:
+                    drawEndGameText(screen, "Black wins by checkmate")
+                else:
+                    drawEndGameText(screen, "White wins by checkmate")
 
-        if game_state.checkmate:
-            game_over = True
-            if game_state.white_to_move:
-                drawEndGameText(screen, "Black wins by checkmate")
-            else:
-                drawEndGameText(screen, "White wins by checkmate")
-
-        elif game_state.stalemate:
-            game_over = True
-            # drawEndGameText(screen, "Stalemate")
-            if game_state.white_to_move:
-                drawEndGameText(screen, "Black wins by checkmate")
-            else:
-                drawEndGameText(screen, "White wins by checkmate")
-                
-        if game_state.count_move >= game_state.count_limit:
-            game_over = True
-            drawEndGameText(screen,"DRAW")
+            if game_state.count_move >= game_state.count_limit:
+                game_over = True
+                drawEndGameText(screen,"DRAW")
 
         clock.tick(MAX_FPS)
         p.display.flip()
