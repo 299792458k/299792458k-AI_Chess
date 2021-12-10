@@ -35,7 +35,7 @@ def main():
     p.init()
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     clock = p.time.Clock()
-    screen.fill(p.Color("white"))
+    screen.fill(p.Color("black"))
     game_state = ChessEngine.GameState()
     valid_moves = game_state.getValidMoves()
     move_made = False  # flag variable for when a move is made
@@ -49,7 +49,7 @@ def main():
     move_undone = False
     move_finder_process = None
     move_log_font = p.font.SysFont("Arial", 14, False, False)
-    player_one = False  # if a human is playing white, then this will be True, else False
+    player_one = True  # if a human is playing white, then this will be True, else False
     player_two = False  # if a human is playing black, then this will be True, else False
     
     p.draw.rect(screen, "brown", p.Rect(109, 256, 100, 50))

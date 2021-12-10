@@ -65,26 +65,40 @@ piece_position_scores = {"wN": knight_scores,
 
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 3
+DEPTH = 3 
 
 # put next move to a queue and it will be get in main when machine turn is called
 def findBestMove(game_state, valid_moves, return_queue, difficult):
     global next_move
     next_move = None
-    # global count_move 
-    # count_move = 0
     random.shuffle(valid_moves)
     
-    if difficult == 1: 
-        findRandomMove(valid_moves)
+    if difficult == 1:  
+       DEPTH = 2
+       if game_state.white_to_move :
+          findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+       else :
+          findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+          
+       return_queue.put(next_move)
+        
     elif difficult == 2:
+        DEPTH = 3
         if game_state.white_to_move :
             findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
         else :
             findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+          
+        return_queue.put(next_move)
     elif difficult == 3:
-        algorthism()
-    return_queue.put(next_move)
+        DEPTH = 4
+        if game_state.white_to_move :
+            findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+        else :
+            findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+          
+        return_queue.put(next_move)
+         
 
 
 # return score and show next move
@@ -115,17 +129,6 @@ def findMoveNegaMinAlphaBeta(game_state, valid_moves, depth, alpha, beta):
            break
                       
     return min_score
-            
-        # if score < min_score:
-        #     min_score = score
-        #     if depth == DEPTH:
-        #         next_move = move
-        # game_state.undoMove()
-        # if min_score < beta:
-        #     beta = min_score
-        # if score <= alpha:
-        #     return score
-    # return min_score
 
 def findMoveNegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta):
     global next_move
@@ -154,15 +157,9 @@ def findMoveNegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta):
             break
             
     return max_score
-    #     if score > max_score:
-    #         max_score = score
-    #     game_state.undoMove()
-    #     if max_score > alpha:
-    #         alpha = max_score
-    #     if score >= beta:
-    #         return score
-    # return max_score
-    
+  
+  
+  ## negamax  
 # def findBestMove(game_state, valid_moves, return_queue):
 #     global next_move
 #     next_move = None
@@ -229,6 +226,3 @@ def findRandomMove(valid_moves):
     Picks and returns a random valid move.
     """
     return random.choice(valid_moves)
-
-def algorthism():
-    pass
