@@ -65,22 +65,24 @@ piece_position_scores = {"wN": knight_scores,
 
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 3 
+DEPTH = 0
 
 # put next move to a queue and it will be get in main when machine turn is called
 def findBestMove(game_state, valid_moves, return_queue, difficult):
     global next_move
     next_move = None
     random.shuffle(valid_moves)
-    
-    if difficult == 1:  
-       DEPTH = 2
-       if game_state.white_to_move :
-          findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
-       else :
-          findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+    global DEPTH
+    if difficult == 1: 
+    #    DEPTH = 2
+    #    if game_state.white_to_move :
+    #       findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+    #    else :
+    #       findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
           
-       return_queue.put(next_move)
+    #    return_queue.put(next_move)
+        findGreedyMove(game_state, valid_moves)
+        return_queue.put(next_move)
         
     elif difficult == 2:
         DEPTH = 3
@@ -221,8 +223,43 @@ def scoreBoard(game_state):
     return score
 
 
+
+
 def findRandomMove(valid_moves):
     """
     Picks and returns a random valid move.
     """
     return random.choice(valid_moves)
+
+
+
+# greedy algorithm
+
+def findGreedyMove(game_state, valid_moves):
+    global next_move
+    turnMultiplier = 1 if game_state.white_to_move else -1
+    maxScore = -CHECKMATE
+    bestMove = None
+    for playerMove in valid_moves:
+        game_state.makeMove(playerMove)
+        if game_state.checkmate:
+            score = CHECKMATE
+        elif game_state.stalemate:
+            score = STALEMATE
+        else:
+            score = turnMultiplier * scoreMaterial(game_state.board)
+        if score > maxScore:
+            maxScore = score
+            next_move = playerMove
+        game_state.undoMove()
+    return maxScore
+
+def scoreMaterial (board):
+    score = 0
+    for row in board:
+        for square in row:
+            if square[0] == 'w':
+                score += piece_score[square[1]]
+            elif square[0] == 'b':
+                score -= piece_score[square[1]]
+    return score
