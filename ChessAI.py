@@ -68,17 +68,22 @@ STALEMATE = 0
 DEPTH = 3
 
 # put next move to a queue and it will be get in main when machine turn is called
-def findBestMove(game_state, valid_moves, return_queue):
+def findBestMove(game_state, valid_moves, return_queue, difficult):
     global next_move
     next_move = None
     # global count_move 
     # count_move = 0
     random.shuffle(valid_moves)
-    if game_state.white_to_move :
-        findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
-    else :
-        findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
     
+    if difficult == 1: 
+        findRandomMove(valid_moves)
+    elif difficult == 2:
+        if game_state.white_to_move :
+            findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+        else :
+            findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+    elif difficult == 3:
+        algorthism()
     return_queue.put(next_move)
 
 
@@ -224,3 +229,6 @@ def findRandomMove(valid_moves):
     Picks and returns a random valid move.
     """
     return random.choice(valid_moves)
+
+def algorthism():
+    pass
