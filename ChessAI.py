@@ -75,29 +75,19 @@ def findBestMove(game_state, valid_moves, return_queue, difficult):
     
     if difficult == 1:  
        DEPTH = 2
-       if game_state.white_to_move :
-          findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
-       else :
-          findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
-          
-       return_queue.put(next_move)
         
     elif difficult == 2:
         DEPTH = 3
-        if game_state.white_to_move :
-            findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
-        else :
-            findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
           
-        return_queue.put(next_move)
     elif difficult == 3:
         DEPTH = 4
-        if game_state.white_to_move :
-            findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
-        else :
-            findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+    
+    if game_state.white_to_move :
+          findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
+    else :
+          findMoveNegaMinAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE,CHECKMATE)
           
-        return_queue.put(next_move)
+    return_queue.put(next_move)
          
 
 
