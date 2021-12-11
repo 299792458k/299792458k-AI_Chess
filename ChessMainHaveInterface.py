@@ -60,7 +60,8 @@ def main():
     yn = p.transform.scale(p.image.load("images/yn.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     qt = p.transform.scale(p.image.load("images/quit_stop.png"), (MOVE_LOG_PANEL_WIDTH, 60))
     resume = p.transform.scale(p.image.load("images/resume.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
-    tmp = p.transform.scale(p.image.load("images/tmp.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    help = p.transform.scale(p.image.load("images/help.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    aboutUs = p.transform.scale(p.image.load("images/aboutUs.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     difficult = 0
     
     play = 1
@@ -96,7 +97,7 @@ def main():
                             play = 13
                             reFlag = 1
         if play == 11:
-            screen.blit(tmp, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+            screen.blit(help, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
             '''
                 add help content 
             '''
@@ -110,7 +111,7 @@ def main():
                         if 20 < location[1] < 32:
                             play = 1
         if play == 12:
-            screen.blit(tmp, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+            screen.blit(aboutUs, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
             '''
             add about us content
             '''
@@ -206,6 +207,17 @@ def main():
                                 play = 1
                                 tmpPlay = 0
                                 game_state = ChessEngine.GameState()
+                                valid_moves = game_state.getValidMoves()
+                                square_selected = ()
+                                player_clicks = []
+                                move_made = False
+                                animate = False
+                                game_over = False
+                                if ai_thinking:
+                                    move_finder_process.terminate()
+                                    ai_thinking = False
+                                move_undone = True
+
                             elif 400 < location[0] < 570:
                                 tmpPlay = 0
 
