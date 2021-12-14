@@ -58,16 +58,20 @@ def main():
     gd3 = p.transform.scale(p.image.load("images/gd3.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     global yn, qt, resume
     yn = p.transform.scale(p.image.load("images/yn.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
-    qt = p.transform.scale(p.image.load("images/quit_stop.png"), (MOVE_LOG_PANEL_WIDTH, 60))
+    qt = p.transform.scale(p.image.load("images/log.png"), (MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     resume = p.transform.scale(p.image.load("images/resume.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     help = p.transform.scale(p.image.load("images/help.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     aboutUs = p.transform.scale(p.image.load("images/aboutUs.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    draw = p.transform.scale(p.image.load("images/draw.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    bw = p.transform.scale(p.image.load("images/bw.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    ww = p.transform.scale(p.image.load("images/ww.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     difficult = 0
     
     play = 1
     tmpPlay = 0
     quitFlag = 0
     reFlag = 0
+    goFlag = 0
 
     while running:
         if play == 1:  
@@ -172,9 +176,41 @@ def main():
                                 play = 2
                             else: 
                                 play = 1
+        
+        if play == 41:
+            screen.blit(bw, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+        if play == 42:
+            screen.blit(ww, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+        if play == 43:
+            screen.blit(draw, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+
+        if play == 41 or play == 42 or play == 43:
+                for e in p.event.get():
+                    if e.type == p.QUIT:
+                        reFlag = 4
+                        play = 13
+
+                    if e.type == p.MOUSEBUTTONDOWN:
+                            play = 1
+                            tmpPlay = 0
+                            quitFlag = 0
+                            game_state = ChessEngine.GameState()
+                            valid_moves = game_state.getValidMoves()
+                            square_selected = ()
+                            player_clicks = []
+                            move_made = False
+                            animate = False
+                            game_over = False
+                            if ai_thinking: 
+                                move_finder_process.terminate()
+                                ai_thinking = False
+                            move_undone = True
+                            break
         if play == 4:
             human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two) 
 
+            screen.blit(qt, p.Rect(BOARD_WIDTH, 0, MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+            drawMoveLog(screen, game_state, move_log_font)
             if tmpPlay == 1:
                 screen.blit(yn, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
 
@@ -185,11 +221,12 @@ def main():
                 if e.type == p.QUIT:
                     tmpPlay = 1
                     quitFlag = 1
+                    goFlag = 2
                     
                 # mouse handler
                 elif e.type == p.MOUSEBUTTONDOWN:
                     if not game_over:
-                        location = p.mouse.get_pos()  # (x, y) location of the mouse
+                        location = p.mouse.get_pos() 
                         if 470 < location[1] < 500 and tmpPlay == 0:
                             if 520 < location[0] < 630:
                                 tmpPlay = 1
@@ -303,25 +340,18 @@ def main():
             if not game_over and tmpPlay == 0:
                 drawMoveLog(screen, game_state, move_log_font)
 
-            if game_state.checkmate:
+            if game_state.checkmate or game_state.stalemate and play < 40:
                 game_over = True
                 if game_state.white_to_move:
-                    drawEndGameText(screen, "Black wins by checkmate")
+                    play = 41
+
                 else:
-                    drawEndGameText(screen, "White wins by checkmate")
+                    play = 42
 
-            elif game_state.stalemate:
+            if game_state.count_move >= game_state.count_limit and play < 40:
                 game_over = True
-                # drawEndGameText(screen, "Stalemate")
-                if game_state.white_to_move:
-                    drawEndGameText(screen, "Black wins by checkmate")
-                else:
-                    drawEndGameText(screen, "White wins by checkmate")
-
-            if game_state.count_move >= game_state.count_limit:
-                game_over = True
-                drawEndGameText(screen,"DRAW")
-
+                play = 43
+                    
         clock.tick(MAX_FPS)
         p.display.flip()
 
@@ -384,17 +414,12 @@ def drawPieces(screen, board):
             if piece != "--":
                 screen.blit(IMAGES[piece], p.Rect(column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
-flag1 = 0
 def drawMoveLog(screen, game_state, font):
     """
     Draws the move log.
 
     """
-    global flag1
     move_log_rect = p.Rect(BOARD_WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT)
-    p.draw.rect(screen, p.Color('black'), move_log_rect)
-
-    screen.blit(qt, p.Rect(BOARD_WIDTH, BOARD_HEIGHT - 60, MOVE_LOG_PANEL_WIDTH, 60))
 
     move_log = game_state.move_log
     move_texts = []
@@ -418,17 +443,6 @@ def drawMoveLog(screen, game_state, font):
         text_location = move_log_rect.move(padding, text_y)
         screen.blit(text_object, text_location)
         text_y += text_object.get_height() + line_spacing
-
-
-def drawEndGameText(screen, text):
-    font = p.font.SysFont("Helvetica", 32, True, False)
-    text_object = font.render(text, False, p.Color("gray"))
-    text_location = p.Rect(0, 0, BOARD_WIDTH, BOARD_HEIGHT).move(BOARD_WIDTH / 2 - text_object.get_width() / 2,
-                                                                 BOARD_HEIGHT / 2 - text_object.get_height() / 2)
-    screen.blit(text_object, text_location)
-    text_object = font.render(text, False, p.Color('black'))
-    screen.blit(text_object, text_location.move(2, 2))
-
 
 def animateMove(move, screen, board, clock):
     """
