@@ -3,8 +3,6 @@ Storing all the information about the current state of chess game.
 Determining valid moves at current state.
 It will keep move log.
 """
-
-
 class GameState:
     def __init__(self):
         """
@@ -22,6 +20,7 @@ class GameState:
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
+
         self.moveFunctions = {"p": self.getPawnMoves, "R": self.getRookMoves, "N": self.getKnightMoves,
                               "B": self.getBishopMoves, "Q": self.getQueenMoves, "K": self.getKingMoves}
         self.white_to_move = True
@@ -42,7 +41,7 @@ class GameState:
         ## tinh co hoa
         self.count_move = 0
         self.count_limit = 30
-        self.pawn_move =  False
+        self.pawn_move = False
         self.hit_move = False
 
     def makeMove(self, move):
@@ -157,6 +156,7 @@ class GameState:
         """
         Update the castle rights given the move
         """
+        #depend on Rule 1 of Castling
         if move.piece_captured == "wR":
             if move.end_col == 0:  # left rook
                 self.current_castling_rights.wqs = False
@@ -441,8 +441,7 @@ class GameState:
             if self.pins[i][0] == row and self.pins[i][1] == col:
                 piece_pinned = True
                 pin_direction = (self.pins[i][2], self.pins[i][3])
-                if self.board[row][col][
-                    1] != "Q":  # can't remove queen from pin on rook moves, only remove it on bishop moves
+                if self.board[row][col][1] != "Q":  # can't remove queen from pin on rook moves, only remove it on bishop moves
                     self.pins.remove(self.pins[i])
                 break
 
@@ -561,22 +560,22 @@ class GameState:
         Generate all valid castle moves for the king at (row, col) and add them to the list of moves.
         """
         if self.squareUnderAttack(row, col):
-            return  # can't castle while in check
+            return  # can't castle while in check # Rule 2 of Castling
         if (self.white_to_move and self.current_castling_rights.wks) or (
-                not self.white_to_move and self.current_castling_rights.bks):
+                not self.white_to_move and self.current_castling_rights.bks): # depend on Rule 1 of Castleing
             self.getKingsideCastleMoves(row, col, moves)
         if (self.white_to_move and self.current_castling_rights.wqs) or (
-                not self.white_to_move and self.current_castling_rights.bqs):
+                not self.white_to_move and self.current_castling_rights.bqs): # depend on Rule 1 of Castleing
             self.getQueensideCastleMoves(row, col, moves)
 
     def getKingsideCastleMoves(self, row, col, moves):
-        if self.board[row][col + 1] == '--' and self.board[row][col + 2] == '--':
-            if not self.squareUnderAttack(row, col + 1) and not self.squareUnderAttack(row, col + 2):
+        if self.board[row][col + 1] == '--' and self.board[row][col + 2] == '--': #Rule 4 of Castling
+            if not self.squareUnderAttack(row, col + 1) and not self.squareUnderAttack(row, col + 2): #Rule 3 of Castling
                 moves.append(Move((row, col), (row, col + 2), self.board, is_castle_move=True))
 
     def getQueensideCastleMoves(self, row, col, moves):
-        if self.board[row][col - 1] == '--' and self.board[row][col - 2] == '--' and self.board[row][col - 3] == '--':
-            if not self.squareUnderAttack(row, col - 1) and not self.squareUnderAttack(row, col - 2):
+        if self.board[row][col - 1] == '--' and self.board[row][col - 2] == '--' and self.board[row][col - 3] == '--': #Rule 4 of Castling
+            if not self.squareUnderAttack(row, col - 1) and not self.squareUnderAttack(row, col - 2): #Rule 3 of Castling
                 moves.append(Move((row, col), (row, col - 2), self.board, is_castle_move=True))
 
 

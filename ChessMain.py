@@ -1,9 +1,11 @@
 """
 Main driver file.
-Handling user input.
-Displaying current GameStatus object.
+Xử lý thao tác của người dùng
+Render giao diện trang thai cua ban co
 """
+from os import truncate
 import pygame as p
+from pygame.image import load
 import ChessEngine, ChessAI
 import sys
 from multiprocessing import Process, Queue
@@ -29,8 +31,8 @@ def loadImages():
 
 def main():
     """
-    The main driver for our code.
-    This will handle user input and updating the graphics.
+    The main driver
+    handle user input and updating the graphics.
     """
     p.init()
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
@@ -49,82 +51,246 @@ def main():
     move_undone = False
     move_finder_process = None
     move_log_font = p.font.SysFont("Arial", 14, False, False)
-    player_one = True  # if a human is playing white, then this will be True, else False
+    player_one = True # if a human is playing white, then this will be True, else False
     player_two = False  # if a human is playing black, then this will be True, else False
-    
-    p.draw.rect(screen, "brown", p.Rect(109, 256, 100, 50))
-    p.draw.rect(screen, "brown", p.Rect(327, 256, 100, 50))
-    p.draw.rect(screen, "brown", p.Rect(545, 256, 100, 50))
-    
+    gd1 = p.transform.scale(p.image.load("images/gd1.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    gd2 = p.transform.scale(p.image.load("images/gd2.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    gd3 = p.transform.scale(p.image.load("images/gd3.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    global yn, qt, resume
+    yn = p.transform.scale(p.image.load("images/yn.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    qt = p.transform.scale(p.image.load("images/log.png"), (MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    resume = p.transform.scale(p.image.load("images/resume.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    help = p.transform.scale(p.image.load("images/help.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    aboutUs = p.transform.scale(p.image.load("images/aboutUs.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    draw = p.transform.scale(p.image.load("images/draw.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    bw = p.transform.scale(p.image.load("images/bw.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    ww = p.transform.scale(p.image.load("images/ww.png"), (BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     difficult = 0
-    font = p.font.SysFont('consolas', 24)
-
-    start = font.render('Choose a level of difficult:', True, "gray")
-    screen.blit(start, (130, 200))
-
-    easy = font.render('EASY', True, "gray")
-    screen.blit(easy, (130, 270))
-
-    medium = font.render('MEDIUM', True, "gray")
-    screen.blit(medium, (335, 270))
-
-    hard = font.render('HARD', True, "gray")
-    screen.blit(hard, (565, 270))
     
-    play = 0
+    play = 1
+    tmpPlay = 0
+    quitFlag = 0
+    reFlag = 0
+    goFlag = 0
+
     while running:
-        if play == 0:
+        if play == 1:  
+            screen.blit(gd1, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))          
             for e in p.event.get():
                 if e.type == p.QUIT:
-                    p.quit()
-                    sys.exit()
-
+                    play = 13
+                    reFlag = 1
                 if e.type == p.MOUSEBUTTONDOWN:
                     location = p.mouse.get_pos()  # (x, y) location of the mouse
-                    if 256 < location[1] < 286:
-                        if 109 < location[0] < 218:
-                            difficult = 1
-                        elif 327 < location[0] < 436: 
-                            difficult = 2
-                        elif 545 < location[0] < 654:
-                            difficult = 3
-                if difficult != 0:
-                    play = 1
-                    # print(difficult)
-                    break
-                    
-        if play == 1:
-            human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two) 
+                    if (125 < location[1] < 180):
+                        if 120 < location[0] < 360:
+                            play = 2
+                            player_one = True
+                            player_two = False
+                        elif 390 < location[0] < 630:
+                            play = 3
+                            player_one = True
+                            player_two = True
+                    elif 260 < location[0] < 500 and location[1] > 180:
+                        if 220 < location[1] < 280:
+                            play = 11
+                            #help
+                        if 325 < location[1] < 380:
+                            play = 12#about us
+                        if 415 < location[1] < 470:
+                            play = 13
+                            reFlag = 1
+        if play == 11:
+            screen.blit(help, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+            '''
+                add help content 
+            '''
             for e in p.event.get():
                 if e.type == p.QUIT:
-                    p.quit()
-                    sys.exit()
+                    play = 13
+                    reFlag = 11
+                if e.type == p.MOUSEBUTTONDOWN:
+                    location = p.mouse.get_pos()
+                    if 730 < location[0] < 740:
+                        if 20 < location[1] < 32:
+                            play = 1
+        if play == 12:
+            screen.blit(aboutUs, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+
+            for e in p.event.get():
+                if e.type == p.QUIT:
+                    play = 13
+                    reFlag = 12
+                if e.type == p.MOUSEBUTTONDOWN:
+                    location = p.mouse.get_pos()
+                    if 730 < location[0] < 740:
+                        if 20 < location[1] < 32:
+                            play = 1
+        if play == 13:
+            screen.blit(yn, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+            for e in p.event.get():
+                if e.type == p.MOUSEBUTTONDOWN:
+                    location = p.mouse.get_pos()
+                    if 240 < location[1] < 280:
+                        if 195 < location[0] < 365:
+                            p.quit()
+                            sys.exit()
+                        elif 400 < location[0] < 570:
+                            play = reFlag  
+
+        if play == 2:
+            screen.blit(gd2, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+            for e in p.event.get():
+                if e.type == p.QUIT:
+                    play = 13
+                    reFlag = 2
+                if e.type == p.MOUSEBUTTONDOWN:
+                    location = p.mouse.get_pos()
+                    if 260 < location[0] < 500:
+                        if 80 < location[1] < 136:
+                            difficult = 1
+                            play = 3
+                        elif 180 < location[1] < 240:
+                            difficult = 2
+                            play = 3
+                        elif 285 < location[1] < 345:
+                            difficult = 3
+                            play = 3
+                        elif 390 < location[1] < 450:
+                            play = 1
+        if play == 3:
+            if e.type == p.QUIT:
+                play = 13
+                reFlag = 3
+            screen.blit(gd3, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+            for e in p.event.get():
+                if e.type == p.MOUSEBUTTONDOWN:
+                    location = p.mouse.get_pos()
+                    if 260 < location[0] < 500:
+                        if 180 < location[1] < 240:
+                            play = 4
+                        elif 275 < location[1] < 335:
+                            if player_two == False:
+                                play = 2
+                            else: 
+                                play = 1
+        
+        if play == 41:
+            screen.blit(bw, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+        if play == 42:
+            screen.blit(ww, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+        if play == 43:
+            screen.blit(draw, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+
+        if play == 41 or play == 42 or play == 43:
+                for e in p.event.get():
+                    if e.type == p.QUIT:
+                        reFlag = 4
+                        play = 13
+
+                    if e.type == p.MOUSEBUTTONDOWN:
+                            play = 1
+                            tmpPlay = 0
+                            quitFlag = 0
+                            game_state = ChessEngine.GameState()
+                            valid_moves = game_state.getValidMoves()
+                            square_selected = ()
+                            player_clicks = []
+                            move_made = False
+                            animate = False
+                            game_over = False
+                            if ai_thinking: 
+                                move_finder_process.terminate()
+                                ai_thinking = False
+                            move_undone = True
+                            break
+        if play == 4:
+            human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two) 
+
+            screen.blit(qt, p.Rect(BOARD_WIDTH, 0, MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+            drawMoveLog(screen, game_state, move_log_font)
+            if tmpPlay == 1:
+                screen.blit(yn, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+
+            if tmpPlay == 2:
+                screen.blit(resume, p.Rect(0, 0, BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+
+            for e in p.event.get():
+                if e.type == p.QUIT:
+                    tmpPlay = 1
+                    quitFlag = 1
+                    goFlag = 2
+                    
                 # mouse handler
                 elif e.type == p.MOUSEBUTTONDOWN:
                     if not game_over:
-                        location = p.mouse.get_pos()  # (x, y) location of the mouse
-                        col = location[0] // SQUARE_SIZE
-                        row = location[1] // SQUARE_SIZE
-                        if square_selected == (row, col) or col >= 8:  # user clicked the same square twice
-                            square_selected = ()  # deselect
-                            player_clicks = []  # clear clicks
-                        else:
-                            square_selected = (row, col)
-                            player_clicks.append(square_selected)  # append for both 1st and 2nd click
-                        if len(player_clicks) == 2 and human_turn:  # after 2nd click --> check and make move
-                            move = ChessEngine.Move(player_clicks[0], player_clicks[1], game_state.board)
-                            for i in range(len(valid_moves)):
-                                if move == valid_moves[i]:
-                                    game_state.makeMove(valid_moves[i])
-                                    move_made = True
-                                    animate = True
-                                    square_selected = ()  # reset user clicks
-                                    player_clicks = []
-                            if not move_made:
-                                player_clicks = [square_selected]
+                        location = p.mouse.get_pos() 
+                        if 470 < location[1] < 500 and tmpPlay == 0:
+                            if 520 < location[0] < 630:
+                                tmpPlay = 1
+                            elif 645 < location[0] < 755:
+                                tmpPlay = 2
+                        if quitFlag == 1:
+                            if 195 < location[0] < 365:
+                                p.quit()
+                                sys.exit()
+                            elif 400 < location[0] < 570:
+                                tmpPlay = 0
+                                quitFlag = 0
+                        if tmpPlay == 1  and 240 < location[1] < 280 :
+                            if 195 < location[0] < 365:
+                                play = 1
+                                tmpPlay = 0
+                                game_state = ChessEngine.GameState()
+                                valid_moves = game_state.getValidMoves()
+                                square_selected = ()
+                                player_clicks = []
+                                move_made = False
+                                animate = False
+                                game_over = False
+                                if ai_thinking:
+                                    move_finder_process.terminate()
+                                    ai_thinking = False
+                                move_undone = True
 
-                # key handler
-                elif e.type == p.KEYDOWN:
+                            elif 400 < location[0] < 570:
+                                tmpPlay = 0
+
+                        if tmpPlay == 2:
+                            if 260 < location[0] < 505 and 235 < location[1] < 295:
+                                tmpPlay = 0
+
+                        if tmpPlay == 0:
+                            col = location[0] // SQUARE_SIZE
+                            row = location[1] // SQUARE_SIZE
+                            if square_selected == (row, col) or col >= 8:  # user clicked the same square twice
+                                square_selected = ()  # deselect
+                                player_clicks = []  # clear clicks
+                            else:
+                                square_selected = (row, col)
+                                player_clicks.append(square_selected)  # append for both 1st and 2nd click
+                            if len(player_clicks) == 2 and human_turn:  # after 2nd click --> check and make move
+                                move = ChessEngine.Move(player_clicks[0], player_clicks[1], game_state.board)
+                                for i in range(len(valid_moves)):
+                                    if move == valid_moves[i]:
+                                        game_state.makeMove(valid_moves[i])
+                                        move_made = True
+                                        animate = True
+                                        square_selected = ()  # reset user clicks
+                                        player_clicks = []
+                                # test nuoc di co the
+                                if move not in valid_moves:
+                                    piece = game_state.board[square_selected[0]][square_selected[1]]
+                                    if (game_state.white_to_move and piece[0] != 'w') \
+                                            or (not game_state.white_to_move and piece[0] != 'b'):
+                                        print('Invalid move')
+                                if not move_made:
+                                    player_clicks = [square_selected]
+
+
+
+                    # key handler
+                elif e.type == p.KEYDOWN and tmpPlay == 0:
                     if e.key == p.K_z:  # undo when 'z' is pressed
                         game_state.undoMove()
                         move_made = True
@@ -174,30 +340,24 @@ def main():
                 animate = False
                 move_undone = False
 
-            drawGameState(screen, game_state, valid_moves, square_selected)
+            if tmpPlay == 0:
+                drawGameState(screen, game_state, valid_moves, square_selected)
 
-            if not game_over:
+            if not game_over and tmpPlay == 0:
                 drawMoveLog(screen, game_state, move_log_font)
 
-            if game_state.checkmate:
+            if game_state.checkmate or game_state.stalemate and play < 40:
                 game_over = True
                 if game_state.white_to_move:
-                    drawEndGameText(screen, "Black wins by checkmate")
+                    play = 41
+
                 else:
-                    drawEndGameText(screen, "White wins by checkmate")
+                    play = 42
 
-            elif game_state.stalemate:
+            if game_state.count_move >= game_state.count_limit and play < 40:
                 game_over = True
-                # drawEndGameText(screen, "Stalemate")
-                if game_state.white_to_move:
-                    drawEndGameText(screen, "Black wins by checkmate")
-                else:
-                    drawEndGameText(screen, "White wins by checkmate")
-
-            if game_state.count_move >= game_state.count_limit:
-                game_over = True
-                drawEndGameText(screen,"DRAW")
-
+                play = 43
+                    
         clock.tick(MAX_FPS)
         p.display.flip()
 
@@ -213,8 +373,7 @@ def drawGameState(screen, game_state, valid_moves, square_selected):
 
 def drawBoard(screen):
     """
-    Draw the squares on the board.
-    The top left square is always light.
+    Ve ban co
     """
     global colors
     colors = [p.Color("white"), p.Color("gray")]
@@ -260,14 +419,13 @@ def drawPieces(screen, board):
             if piece != "--":
                 screen.blit(IMAGES[piece], p.Rect(column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
-
 def drawMoveLog(screen, game_state, font):
     """
     Draws the move log.
 
     """
     move_log_rect = p.Rect(BOARD_WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT)
-    p.draw.rect(screen, p.Color('black'), move_log_rect)
+
     move_log = game_state.move_log
     move_texts = []
     for i in range(0, len(move_log), 2):
@@ -290,17 +448,6 @@ def drawMoveLog(screen, game_state, font):
         text_location = move_log_rect.move(padding, text_y)
         screen.blit(text_object, text_location)
         text_y += text_object.get_height() + line_spacing
-
-
-def drawEndGameText(screen, text):
-    font = p.font.SysFont("Helvetica", 32, True, False)
-    text_object = font.render(text, False, p.Color("gray"))
-    text_location = p.Rect(0, 0, BOARD_WIDTH, BOARD_HEIGHT).move(BOARD_WIDTH / 2 - text_object.get_width() / 2,
-                                                                 BOARD_HEIGHT / 2 - text_object.get_height() / 2)
-    screen.blit(text_object, text_location)
-    text_object = font.render(text, False, p.Color('black'))
-    screen.blit(text_object, text_location.move(2, 2))
-
 
 def animateMove(move, screen, board, clock):
     """
